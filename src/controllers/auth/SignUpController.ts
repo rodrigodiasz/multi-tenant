@@ -14,7 +14,7 @@ const schema = z.object({
   }),
 });
 
-export class signupController {
+export class SignUpController {
   static async handler(request: FastifyRequest, reply: FastifyReply) {
     const { user, organization } = schema.parse(request.body);
 
@@ -34,6 +34,16 @@ export class signupController {
         name: user.name,
         email: user.email,
         password: hashedPassword,
+        organizations:{
+          create {
+            role: 'OWNER',
+            organization: {
+              create: {
+                name: organization.name,
+              }
+            }
+          }
+        }
       },
     });
 
