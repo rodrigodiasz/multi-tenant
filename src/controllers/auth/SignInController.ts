@@ -4,8 +4,8 @@ import { db } from "../../lib/db";
 import bcrypt from "bcryptjs";
 
 const schema = z.object({
-    email: z.string().email(),
-    password: z.string().min(8),
+  email: z.string().email(),
+  password: z.string().min(8),
 });
 
 export class SignInController {
@@ -14,7 +14,16 @@ export class SignInController {
 
     const user = await db.user.findUnique({
       where: { email },
-      select: { id: true, password: true },
+      select: {
+        id: true,
+        password: true,
+        organizations: {
+          take: 1,
+          where: {
+            role: "OWNER",
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -27,8 +36,20 @@ export class SignInController {
       return reply.code(409).send({ error: "Invalid credentials" });
     }
 
-    const accessToken = request.server.jwt.sign({ sub: user.id });
+    const [organization] = user.organizations;
 
-    reply.code(200).send({ accessToken });
+    if (!organization) {
+      return reply.code(409).send({ error: "You dont have any organizations" });
+    }
+
+    const accessToken = request.server.jwt.sign({
+      sub: user.id,
+      organizationId: organization.organizationId,
+      role: organization.role,
+    });
+
+    reply.code(200).send({
+      accessToken,
+    });
   }
 }
