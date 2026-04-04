@@ -17,35 +17,15 @@ export class SignInController {
       select: {
         id: true,
         password: true,
-        organizations: {
-          take: 1,
-          where: {
-            role: "OWNER",
-          },
-        },
       },
     });
 
-    if (!user) {
-      return reply.code(409).send({ error: "nvalid credentials" });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
+    if (!user || !(await compare(password, user.password))) {
       return reply.code(409).send({ error: "Invalid credentials" });
     }
-
-    const [organization] = user.organizations;
-
-    if (!organization) {
-      return reply.code(409).send({ error: "You dont have any organizations" });
-    }
-
+    
     const accessToken = request.server.jwt.sign({
       sub: user.id,
-      organizationId: organization.organizationId,
-      role: organization.role,
     });
 
     reply.code(200).send({
