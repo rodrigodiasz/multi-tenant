@@ -26,6 +26,7 @@ export async function validatePermissionMiddleware(
     if (!organizationUser) {
       return reply.status(403).send({ message: "You don't have enough permissions" });
     }
+    request.organizationUser = organizationUser;
   } catch {
     return reply.status(403).send({ message: "You don't have enough permissions" });
   }
