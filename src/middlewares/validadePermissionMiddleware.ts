@@ -1,10 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../lib/db";
 
-export async function validatePermissionMiddleware(
-  request: FastifyRequest,
-  reply: FastifyReply,
-) {
+export async function validatePermissionMiddleware(requiredRoles?: OrganizationRole[]) {
+
+  return async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     const organizationId = request.headers["x-org-id"];
 
@@ -23,11 +22,12 @@ export async function validatePermissionMiddleware(
       },
     });
 
-    if (!organizationUser) {
+    if (!organizationUser || (requiredRoles || !requiredRoles.includes(organizationUser.role))) {
       return reply.status(403).send({ message: "You don't have enough permissions" });
     }
     request.organizationUser = organizationUser;
-  } catch {
-    return reply.status(403).send({ message: "You don't have enough permissions" });
+    } catch {
+      return reply.status(403).send({ message: "You don't have enough permissions" });
+    }
   }
 }
