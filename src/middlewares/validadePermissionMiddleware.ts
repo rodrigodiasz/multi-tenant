@@ -9,11 +9,11 @@ export async function validatePermissionMiddleware(requiredRoles?: OrganizationR
 
     if (!organizationId || typeof organizationId !== 'string') {
       return reply.status(403).send({ message: "Organization is missing" });
-    }
+    };
 
     const { sub } = request.user;
 
-    const organizationUser = await db.organizationUser.findUnique({
+    const organizationUser = request.organizationUser ?? await db.organizationUser.findUnique({
       where: {
         userId_organizationId: {
           organizationId,
