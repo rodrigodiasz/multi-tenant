@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { db } from "../../lib/db";
 import { z } from "zod";
+import { LeadsRepository } from "../../repositories/LeadsRepository";
 
 const schema = z.object({
   name: z.string().min(1),
@@ -9,18 +9,19 @@ const schema = z.object({
   });
 
 export class CreateLeadController {
-  static async handler(request: FastifyRequest, reply: FastifyReply) {
-    const { name, email, phone } = schema.parse(request.body);
-    const { organizationId } = request.organizationUser;
+  constructor(private readonly leadsRepo: LeadsRepository) {}
 
-    const lead = await db.lead.create({
-      data: {
+  async handler(request: FastifyRequest, reply: FastifyReply) {
+    const { name, email, phone } = schema.parse(request.body);
+
+    const lead = await this.leadsRepo.create(
+      {
         name,
-        email,    
+        email,
         phone,
-        organizationId,
-      },
-    });
+      }
+    );
+
   reply.code(201).send({lead})
   }
 }

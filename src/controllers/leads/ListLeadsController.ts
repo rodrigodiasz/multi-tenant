@@ -1,15 +1,12 @@
-import { FastifyRequest, FastifyReply } from "fastify";
-import { db } from "../../lib/db";
+import { LeadsRepository } from "../../repositories/LeadsRepository";
+import { IController } from "../../interfaces/IController";
 
-export class ListLeadsController {
-  static async handler(request: FastifyRequest) {
-    const { organizationId } = request.organizationUser;
+export class ListLeadsController implements IController {
+  constructor(private readonly leadsRepo: LeadsRepository) {}
 
-    const leads = await db.lead.findMany({
-      where: {
-        organizationId,
-      },
-    });
+  async handler() {
+    const leads = await this.leadsRepo.findAll();
+
     return {
       leads,
     };

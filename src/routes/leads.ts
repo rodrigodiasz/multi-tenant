@@ -1,16 +1,17 @@
-import { FastifyPluginAsync } from "fastify";
-import { ListLeadsController } from "../controllers/leads/ListLeadsController";
+import { FastifyPluginAsync} from "fastify";
 import { validatePermissionMiddleware } from "../middlewares/validadePermissionMiddleware";
-import { CreateLeadController } from "../controllers/leads/CreateLeadController";
+import { makeListLeadsController } from "../factories/makeListLeadsController";
+import { routeAdapter } from "../adapters/routeAdapter";
+import { makeCreateLeadController } from "../factories/makeCreateLeadController";
 
 export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.addHook('onRequest', validatePermissionMiddleware());
 
-  fastify.get("/", ListLeadsController.handler);
+  fastify.get("/", routeAdapter(makeListLeadsController));
   fastify.post("/", 
   {
     onRequest:[validatePermissionMiddleware(['ADMIN', 'OWNER'])],
   }, 
-  CreateLeadController.handler,
+  routeAdapter(makeCreateLeadController),
 );
 };
