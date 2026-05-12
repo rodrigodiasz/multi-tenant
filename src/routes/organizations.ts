@@ -1,14 +1,16 @@
 import { FastifyPluginAsync } from "fastify";
-import { ListOrgUsersController } from "../controllers/organizations/ListOrgUsersController";
-import { ListUserOrgsController } from "../controllers/organizations/ListUserOrgsController";
 import { validatePermissionMiddleware } from "../middlewares/validadePermissionMiddleware";
+import { routeAdapter } from "../adapters/routeAdapter";
+import { makeListUserOrgsController } from "../factories/makeListUserOrgsController";
+import { makeListOrgUsersController } from "../factories/makeListOrgUsersController";
 
 export const organizationsRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     "/users", 
     {
     onRequest:[validatePermissionMiddleware(['ADMIN', 'OWNER'])],
-  }, ListOrgUsersController.handler);
+  }, routeAdapter(makeListOrgUsersController),
+);
   
-  fastify.get("/", ListUserOrgsController.handler);
+  fastify.get("/", routeAdapter(makeListUserOrgsController, false));
 };
